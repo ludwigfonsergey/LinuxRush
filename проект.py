@@ -807,23 +807,22 @@ def check_callbaack_data(callback):
     bot.send_message(callback.message.chat.id, 'Выберите тест из предложенного списка!', reply_markup=kb1)
   # Обработчик для вопроса
   if callback.data == 'question':
-      def answer(message):
-        import requests
-        import os
-        from mistralai import Mistral
-        model = "mistral-large-latest"
-        client = Mistral(api_key= "RUJzuOj57YKUd8Ej9b1HkEOQmTJMiX8z")
-        chat_response = client.chat.complete( model= model,
-            messages = [
-                {
-                    "role": "user",
-                    "content": "Тебе сейчас зададут вопрос, если он связан с Linux (хотя-бы частично), то отвенть на него, а если нетя, то скажи это пользователю (объясняй на примере Astra Linux) и больше ничего не отвечай, вот текст: " + str(message),
-                },
-            ]
-        )
-        bot.send_message(message.chat.id, chat_response.choices[0].message.content)
-      start = bot.send_message(callback.message.chat.id, 'Задайте мне любой вопрос!')
-      bot.register_next_step_handler(start, answer)
+    def answer(message):
+
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+        model_name = "mistralai/Mistral-7B-Instruct-v0.1"
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
+
+        input_text = "Тебе сейчас зададут вопрос, если он связан с Linux (хотя-бы частично), то отвенть на него, а если нетя, то скажи это пользователю (объясняй на примере Astra Linux) и больше ничего не отвечай, вот текст: " + str(message)
+        inputs = tokenizer(input_text, return_tensors="pt").to("cuda")
+
+        outputs = model.generate(**inputs, max_new_tokens=100)
+        bot.send_message(message.chat.id, (tokenizer.decode(outputs[0], skip_special_tokens=True)))
+
+
+
   if callback.data == 'lesson1_question1':
     markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton(text='Главное меню!')
