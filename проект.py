@@ -54,174 +54,220 @@ def cool(message):
       markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
       btn1 = types.KeyboardButton(text='Главное меню!')
       bot.send_message(message.chat.id, f'Ваш баланс - {str(cans)} литр(ов) топлива. 🔋', reply_markup = markup1)
-    elif message.text == 'Урок 1':
-      test1 = True
-      bot.send_message(message.chat.id, text = start0)
-      time.sleep(1)
-      bot.send_message(message.chat.id, text = start1)
-      time.sleep(1)
-      bot.send_message(message.chat.id, text = start2)
-      markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
-      btn1 = types.KeyboardButton(text='Главное меню!')
-      btn2 = types.KeyboardButton(text='Тест по уроку 1')
-      markup1.add(btn1, btn2)
-      bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup = markup1)
-    elif message.text == 'Урок 2':
-      if cans < 1:
+elif message.text == 'Урок 1':
+    test1 = True
+    with open('lessons/1.txt', 'r', encoding='utf-8') as file:
+        lesson_parts = file.read().split('\n---\n')
+    for part in lesson_parts[:3]:
+        bot.send_message(message.chat.id, text=part.strip())
+        time.sleep(1)
+    
+    markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton(text='Главное меню!')
+    btn2 = types.KeyboardButton(text='Тест по уроку 1')
+    markup1.add(btn1, btn2)
+    bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
+
+elif message.text == 'Урок 2':
+    if cans < 1:
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Баланс')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup = markup1)
-      else:
+        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup=markup1)
+    else:
         test2 = True
-        bot.send_photo(message.chat.id,'AgACAgIAAxkBAAICH2d5B3V2DcW3e9kMe2s7mE0j8SLVAAJR5DEbLSrIS5eQ_3CmNAz1AQADAgADcwADNgQ', terminal0)
+        with open('lessons/2.txt', 'r', encoding='utf-8') as file:
+            lesson_parts = file.read().split('\n---\n')
+        
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICH2d5B3V2DcW3e9kMe2s7mE0j8SLVAAJR5DEbLSrIS5eQ_3CmNAz1AQADAgADcwADNgQ', caption=lesson_parts[0].strip())
         time.sleep(1)
-        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICP2d5Cw3fXmDJm27IRKEFjoS8ciOeAAJb5DEbLSrISzgl0HAdIJDoAQADAgADcwADNgQ', terminal1)
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICP2d5Cw3fXmDJm27IRKEFjoS8ciOeAAJb5DEbLSrISzgl0HAdIJDoAQADAgADcwADNgQ', caption=lesson_parts[1].strip())
         time.sleep(1)
-        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICRGd5C62nbmTRszqjw5qhf-M4U7XUAAJe5DEbLSrIS6YhLaJ6org3AQADAgADcwADNgQ', terminal2)
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICRGd5C62nbmTRszqjw5qhf-M4U7XUAAJe5DEbLSrIS6YhLaJ6org3AQADAgADcwADNgQ', caption=lesson_parts[2].strip())
         time.sleep(1)
-        bot.send_message(message.chat.id, terminal3)
+        bot.send_message(message.chat.id, lesson_parts[3].strip())
+        
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Тест по уроку 2')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup = markup1)
-    elif message.text == 'Урок 3':
-      if cans < 2:
+        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
+
+elif message.text == 'Урок 3':
+    if cans < 2:
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Баланс')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup = markup1)
-      else:
+        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup=markup1)
+    else:
         test3 = True
-        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICU2d5DwxJbPkc6x3Avsiu6JM6PNmKAAJp5DEbLSrIS5-Lp1MalOnyAQADAgADcwADNgQ', caption = file_system0)
+        with open('lessons/3.txt', 'r', encoding='utf-8') as file:
+            lesson_parts = file.read().split('\n---\n')
+        
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICU2d5DwxJbPkc6x3Avsiu6JM6PNmKAAJp5DEbLSrIS5-Lp1MalOnyAQADAgADcwADNgQ', caption=lesson_parts[0].strip())
         time.sleep(1)
-        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICUWd5DrGnM0Hha62r4mIlOxDZBWq-AAJo5DEbLSrIS286uvybh9DrAQADAgADcwADNgQ', caption = file_system1)
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICUWd5DrGnM0Hha62r4mIlOxDZBWq-AAJo5DEbLSrIS286uvybh9DrAQADAgADcwADNgQ', caption=lesson_parts[1].strip())
         time.sleep(1)
+        
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Тест по уроку 3')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup = markup1)
-    elif message.text == 'Урок 4':
-      if cans < 3:
+        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
+
+elif message.text == 'Урок 4':
+    if cans < 3:
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Баланс')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup = markup1)
-      else:
+        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup=markup1)
+    else:
         test4 = True
-        markup1 = types.ReplyKeyboardMarkup(resize_keyboard = True)
+        with open('lessons/4.txt', 'r', encoding='utf-8') as file:
+            lesson_parts = file.read().split('\n---\n')
+        
+        markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Тест по уроку 4')
         markup1.add(btn1, btn2)
-        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICWGd5EOLWxPjp78jTvO9XdpLxeZs2AAJv5DEbLSrISwhsSQlul44TAQADAgADcwADNgQ', caption = packages0)
+        
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICWGd5EOLWxPjp78jTvO9XdpLxeZs2AAJv5DEbLSrISwhsSQlul44TAQADAgADcwADNgQ', caption=lesson_parts[0].strip())
         time.sleep(1)
-        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICWmd5EcKcpbvHGBg_oDj99Zm6qXZgAAJw5DEbLSrIS0dRTPeIirwLAQADAgADcwADNgQ', caption = packages1)
-        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup = markup1)
-    elif message.text == 'Урок 5':
-      if cans < 4:
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICWmd5EcKcpbvHGBg_oDj99Zm6qXZgAAJw5DEbLSrIS0dRTPeIirwLAQADAgADcwADNgQ', caption=lesson_parts[1].strip())
+        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
+
+elif message.text == 'Урок 5':
+    if cans < 4:
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Баланс')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup = markup1)
-      else:
+        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup=markup1)
+    else:
         test5 = True
-        markup1 = types.ReplyKeyboardMarkup(resize_keyboard = True)
+        with open('lessons/5.txt', 'r', encoding='utf-8') as file:
+            lesson_parts = file.read().split('\n---\n')
+        
+        markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Тест по уроку 5')
         markup1.add(btn1, btn2)
-        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAIC6meVBUoS3fcLtNpoPkPXy6TY2yIfAAJQ6TEbJMGpSNKT4sZhs5IJAQADAgADcwADNgQ', caption = graf0)
+        
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAIC6meVBUoS3fcLtNpoPkPXy6TY2yIfAAJQ6TEbJMGpSNKT4sZhs5IJAQADAgADcwADNgQ', caption=lesson_parts[0].strip())
         time.sleep(1)
-        bot.send_message(message.chat.id, text = graf1)
-        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup = markup1)
-    elif message.text == 'Урок 6':
-      if cans < 5:
+        bot.send_message(message.chat.id, lesson_parts[1].strip())
+        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
+
+elif message.text == 'Урок 6':
+    if cans < 5:
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Баланс')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup = markup1)
-      else:
+        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup=markup1)
+    else:
         test6 = True
-        markup1 = types.ReplyKeyboardMarkup(resize_keyboard = True)
+        with open('lessons/6.txt', 'r', encoding='utf-8') as file:
+            lesson_parts = file.read().split('\n---\n')
+        
+        markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Тест по уроку 6')
         markup1.add(btn1, btn2)
-        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICZGd5GHHWNqAN4gJOCNED9XM9rAW7AAK65DEbLSrIS8HyF1gtO3UIAQADAgADcwADNgQ', caption = users0)
+        
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICZGd5GHHWNqAN4gJOCNED9XM9rAW7AAK65DEbLSrIS8HyF1gtO3UIAQADAgADcwADNgQ', caption=lesson_parts[0].strip())
         time.sleep(1)
-        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICaWd5Gc9zuZEx_R3Tk36spd7MEfHLAALO5DEbLSrIS989TvXk_y4AAQEAAwIAA3MAAzYE', users1)
-        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup = markup1)
-    elif message.text == 'Урок 7':
-      if cans < 6:
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICaWd5Gc9zuZEx_R3Tk36spd7MEfHLAALO5DEbLSrIS989TvXk_y4AAQEAAwIAA3MAAzYE', caption=lesson_parts[1].strip())
+        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
+
+elif message.text == 'Урок 7':
+    if cans < 6:
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Баланс')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup = markup1)
-      else:
+        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup=markup1)
+    else:
         test7 = True
-        markup1 = types.ReplyKeyboardMarkup(resize_keyboard = True)
-        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICc2d5LU0Q4hQGf5-FZxNyH8U9pTBFAAI65TEbLSrIS_MJm0rNrVuTAQADAgADcwADNgQ', caption = network0)
+        with open('lessons/7.txt', 'r', encoding='utf-8') as file:
+            lesson_parts = file.read().split('\n---\n')
+        
+        markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICc2d5LU0Q4hQGf5-FZxNyH8U9pTBFAAI65TEbLSrIS_MJm0rNrVuTAQADAgADcwADNgQ', caption=lesson_parts[0].strip())
         time.sleep(1)
-        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICcWd5LUFjfpsJbkeiUxdShNc4tPNIAAI55TEbLSrISwVI0uaWPAqOAQADAgADcwADNgQ', caption = network1)
+        bot.send_photo(message.chat.id, 'AgACAgIAAxkBAAICcWd5LUFjfpsJbkeiUxdShNc4tPNIAAI55TEbLSrISwVI0uaWPAqOAQADAgADcwADNgQ', caption=lesson_parts[1].strip())
+        
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Тест по уроку 7')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup = markup1)
-    elif message.text == 'Урок 8':
-      if cans < 7:
+        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
+
+elif message.text == 'Урок 8':
+    if cans < 7:
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Баланс')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup = markup1)
-      else:
+        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup=markup1)
+    else:
         test8 = True
-        bot.send_message(message.chat.id, bash1)
-        bot.send_message(message.chat.id, bash2)
-        markup1 = types.ReplyKeyboardMarkup(resize_keyboard = True)
+        with open('lessons/8.txt', 'r', encoding='utf-8') as file:
+            lesson_parts = file.read().split('\n---\n')
+        
+        bot.send_message(message.chat.id, lesson_parts[0].strip())
+        bot.send_message(message.chat.id, lesson_parts[1].strip())
+        
+        markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Тест по уроку 8')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup = markup1)
-    elif message.text == 'Урок 9':
-      if cans < 8:
+        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
+
+elif message.text == 'Урок 9':
+    if cans < 8:
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Баланс')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup = markup1)
-      else:
+        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup=markup1)
+    else:
         test9 = True
-        bot.send_message(message.chat.id, bash0)
-        bot.send_message(message.chat.id, bash1)
-        bot.send_message(message.chat.id, bash2)
-        markup1 = types.ReplyKeyboardMarkup(resize_keyboard = True)
+        with open('lessons/9.txt', 'r', encoding='utf-8') as file:
+            lesson_parts = file.read().split('\n---\n')
+        
+        bot.send_message(message.chat.id, lesson_parts[0].strip())
+        bot.send_message(message.chat.id, lesson_parts[1].strip())
+        bot.send_message(message.chat.id, lesson_parts[2].strip())
+        
+        markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Тест по уроку 9')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup = markup1)
-    elif message.text == 'Урок 10':
-      if cans < 9:
+        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
+
+elif message.text == 'Урок 10':
+    if cans < 9:
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Баланс')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup = markup1)
-      else:
+        bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup=markup1)
+    else:
         test10 = True
-        bot.send_message(message.chat.id, sqlite0)
-        bot.send_message(message.chat.id, sqlite1)
-        markup1 = types.ReplyKeyboardMarkup(resize_keyboard = True)
+        with open('lessons/10.txt', 'r', encoding='utf-8') as file:
+            lesson_parts = file.read().split('\n---\n')
+        
+        bot.send_message(message.chat.id, lesson_parts[0].strip())
+        bot.send_message(message.chat.id, lesson_parts[1].strip())
+        
+        markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton(text='Главное меню!')
         btn2 = types.KeyboardButton(text='Тест по уроку 10')
         markup1.add(btn1, btn2)
-        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup = markup1)
+        bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
     elif message.text == 'Тест по уроку 1':
       global completed_test1
       if completed_test1 == False:
