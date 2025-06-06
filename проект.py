@@ -5,6 +5,7 @@ import telebot
 from telebot import util
 import requests
 import random
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 tests1 = False
 tests2 = False
@@ -534,8 +535,6 @@ def check_callbaack_data(callback):
   # Обработчик для вопроса
   if callback.data == 'question':
     def answer(message):
-
-    from transformers import AutoModelForCausalLM, AutoTokenizer
 
         model_name = "mistralai/Mistral-7B-Instruct-v0.1"
         tokenizer = AutoTokenizer.from_pretrained(model_name)
