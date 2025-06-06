@@ -242,27 +242,7 @@ def cool(message):
           btn2 = types.KeyboardButton(text='Тест по уроку 9')
           markup1.add(btn1, btn2)
           bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
-
-  elif message.text == 'Урок 10':
-      if cans < 9:
-          markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
-          btn1 = types.KeyboardButton(text='Главное меню!')
-          btn2 = types.KeyboardButton(text='Баланс')
-          markup1.add(btn1, btn2)
-          bot.send_message(message.chat.id, 'Вы не можете приступить к этому уроку из-за недостатка топлива. Повторите прошедший материал!', reply_markup=markup1)
-      else:
-          test10 = True
-          with open('lessons/10.txt', 'r', encoding='utf-8') as file:
-              lesson_parts = file.read().split('\n---\n')
-          
-          bot.send_message(message.chat.id, lesson_parts[0].strip())
-          bot.send_message(message.chat.id, lesson_parts[1].strip())
-          
-          markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
-          btn1 = types.KeyboardButton(text='Главное меню!')
-          btn2 = types.KeyboardButton(text='Тест по уроку 10')
-          markup1.add(btn1, btn2)
-          bot.send_message(message.chat.id, 'Ура, вы прошли урок! Выберите один из предложенных вариантов!', reply_markup=markup1)
+    
       elif message.text == 'Тест по уроку 1':
         global completed_test1
         if completed_test1 == False:
@@ -532,7 +512,7 @@ def check_callbaack_data(callback):
       lesson8 = types.KeyboardButton(text = 'Урок 8')
       lesson9 = types.KeyboardButton(text = 'Урок 9')
       lesson10 = types.KeyboardButton(text = 'Урок 10')
-      kb1.add(lesson1, lesson2, lesson3, lesson4, lesson5, lesson6, lesson7, lesson8, lesson9, lesson10)
+      kb1.add(lesson1, lesson2, lesson3, lesson4, lesson5, lesson6, lesson7, lesson8, lesson9)
       bot.send_message(callback.message.chat.id, 'Выберите интересующий вас урок из предложенного списка!', reply_markup=kb1)
   elif callback.data == 'test':
     global test1
