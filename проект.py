@@ -5,25 +5,20 @@ import logging
 from g4f.client import Client
 import requests
 
-# Настройка логирования
 logging.basicConfig(filename='bot.log', level=logging.INFO)
 
-# Токен бота
 BOT_TOKEN = '7640964793:AAGwd2DuISteQKkoZpUWD6_-pXDWP1-KVa4'
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
-# Словарь для отслеживания пройденных уроков пользователями
 user_progress = {}
 
-# Словарь для хранения текущих вопросов и правильных ответов
 current_questions = {}
 
-# Словарь для отслеживания состояния генерации
+
 generation_state = {}
 
 def sanitize_markdown(text):
-    # Удаляем или экранируем символы, которые могут вызвать проблемы в Markdown
     escape_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}']
     for char in escape_chars:
         text = text.replace(char, f'\\{char}')
@@ -160,7 +155,7 @@ def handle_text(message):
             if ": " in correct_answer_line:
                 correct_answer = correct_answer_line.split(': ')[1]
             else:
-                bot.send_message(chat_id, "_Извините, не удалось определить правильный ответ._", parse_mode='Markdown')
+                bot.send_message(chat_id, "_Извините, не удалось определить правильный ответ, либо на сервере повышенная нагрузка, попробуйте немного подождать._", parse_mode='Markdown')
                 return
 
             current_questions[chat_id] = correct_answer
@@ -178,9 +173,6 @@ def handle_text(message):
     elif chat_id in current_questions:
         user_answer = message.text.strip().upper()
         correct_answer = current_questions[chat_id].strip().upper()
-
-        # Логируем ответы для отладки
-        logging.info(f"User answer: {user_answer}, Correct answer: {correct_answer}")
 
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn = types.KeyboardButton('Главное меню!')
