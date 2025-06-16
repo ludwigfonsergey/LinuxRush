@@ -9,7 +9,7 @@ import requests
 logging.basicConfig(filename='bot.log', level=logging.INFO)
 
 # Токен бота
-BOT_TOKEN = '7871094491:AAEMaEGuoWRrNs3wEJe3hzqYKNO48CRsYeM'
+BOT_TOKEN = '7640964793:AAGwd2DuISteQKkoZpUWD6_-pXDWP1-KVa4'
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
