@@ -5,551 +5,381 @@ import logging
 import random
 import sqlite3
 from g4f.client import Client
-import requests
+import re
 
 # Настройка логирования
-logging.basicConfig(filename='bot.log', level=logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    filename='bot.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Константы
 BOT_TOKEN = '7640964793:AAGwd2DuISteQKkoZpUWD6_-pXDWP1-KVa4'
 LESSONS_DIR = 'lessons'
-GENERATION_TIMEOUT = 10
 
-# Инициализация бота с увеличенным тайм-аутом
+# Инициализация бота
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # Глобальные переменные
 current_questions = {}
-generation_state = {}
+progress_loading = set()
 
-
-def get_db_connection():
-    conn = sqlite3.connect('user_progress.db', check_same_thread=False)
-    return conn
-
-
-def sanitize_markdown(text):
-    escape_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}']
-    for char in escape_chars:
-        text = text.replace(char, f'\\{char}')
-    return text
-
-
-def generate_question_and_answers(lesson_topic, lesson_content):
-    content = f'''
-    На основе следующего материала урока:
-    {lesson_content}
-
-    Сгенерируй вопрос и 4 варианта ответа на тему: {lesson_topic}.
-    Убедись, что вопрос и ответы соответствуют материалу урока.
-    Укажи правильный ответ в формате: "Правильный ответ: [номер варианта]".
-    '''
-    try:
-        client = Client()
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": content}],
-            web_search=False
-        )
-        return response.choices[0].message.content
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Network error: {e}")
-        return "К сожалению, я не смог сгенерировать ответ из-за проблем с интернетом. Попробуйте снова."
-
-
-def generate_open_question(lesson_topic, lesson_content):
-    content = f'''
-    На основе следующего материала урока:
-    {lesson_content}
-
-    Сгенерируй открытый вопрос на тему: {lesson_topic}.
-    Убедись, что вопрос соответствует материалу урока.
-    Избегай использования галактической тематики и сравнений с другими дистрибутивами.
-    '''
-    try:
-        client = Client()
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": content}],
-            web_search=False
-        )
-        return response.choices[0].message.content
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Network error: {e}")
-        return "К сожалению, я не смог сгенерировать ответ из-за проблем с интернетом. Попробуйте снова."
-
-
-def evaluate_open_answer(question, user_answer, lesson_content):
-    content = f'''
-    Вопрос: {question}
-    Ответ пользователя: {user_answer}
-
-    На основе следующего материала урока:
-    {lesson_content}
-
-    Оцени ответ ученика по 10-бальной шкале. Учитывай, что это ответ ученика, и оценивай менее строго.
-    Предоставь краткий и конструктивный отзыв. Избегай использования галактической тематики и сравнений с другими дистрибутивами.
-    '''
-    try:
-        client = Client()
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": content}],
-            web_search=False
-        )
-        return response.choices[0].message.content
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Network error: {e}")
-        return "К сожалению, я не смог оценить ответ из-за проблем с интернетом. Попробуйте снова."
-
-
-def generate_user_portrait(user_id):
-    generating_message = bot.send_message(user_id,
-                                          "_Генерирую портрет пользователя, это может занять некоторое время..._",
-                                          parse_mode='Markdown')
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute('SELECT lesson_number, score, feedback FROM user_progress WHERE user_id = ?', (user_id,))
-    test_results = cursor.fetchall()
-
-    conn.close()
-
-    if not test_results:
-        bot.delete_message(user_id, generating_message.message_id)
-        return "_У вас пока нет результатов тестов._"
-
-    results_text = "*Ваши результаты тестов:*\n"
-    for result in test_results:
-        lesson_number, score, feedback = result
-        results_text += f"Урок {lesson_number}: {score}/10\nОтзыв: {feedback}\n\n"
-
-    content = f'''
-    На основе следующих результатов тестов пользователя:
-    {results_text}
-
-    Создай краткий портрет пользователя, опиши его сильные и слабые стороны.
-    Дай наставления, куда развиваться дальше.
-    '''
-
-    try:
-        client = Client()
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": content}],
-            web_search=False
-        )
-        bot.delete_message(user_id, generating_message.message_id)
-        return response.choices[0].message.content
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Network error: {e}")
-        bot.delete_message(user_id, generating_message.message_id)
-        return "К сожалению, я не смог сгенерировать портрет пользователя из-за проблем с интернетом. Попробуйте снова."
-
+def clean_lesson_text(text):
+    """Очистка текста урока"""
+    text = re.sub(r'packages\d+\s*=\s*"""', '', text)
+    text = text.replace('\\', '').replace('"""', '')
+    text = '\n'.join(line.strip() for line in text.split('\n') if line.strip())
+    text = re.sub(r'(\d+)\.', r'\1. ', text)
+    text = text.replace(r'\- ', '• ')
+    text = re.sub(r'\\\((.*?)\)', r'\1', text)
+    return text.strip()
 
 def get_lesson(lesson_number):
-    time.sleep(1)
+    """Получение урока"""
     try:
-        with open(f'{LESSONS_DIR}/{lesson_number}.txt', 'r', encoding='utf-8') as file:
-            content = file.read()
-
-        # Пример форматирования урока
-        formatted_content = f"""
-*Урок {lesson_number}*
-
-{content}
-
-*Задание:*
-1. Изучите материал урока.
-2. Попробуйте выполнить практические задания.
-3. Пройдите тест для проверки знаний.
-
-*Дополнительные ресурсы:*
-- [Официальная документация](https://www.kernel.org/doc/html/latest/)
-- [Форумы поддержки](https://www.linux.org/forums/)
-"""
-
-        return formatted_content
-    except Exception as e:
-        logger.error(f"Error reading lesson file: {e}")
-        return "_Урок не найден. Пожалуйста, проверьте номер урока и попробуйте снова._"
-
-
-def answer_question(question):
-    content_2 = f'''
-    Ответь на вопрос по Linux: {question}.
-    Поясняй на примере Astra Linux.
-    Если это вопрос не про Linux, вежливо сообщи об этом пользователю и больше ничего не говори.
-    Отвечай кратко. Избегай использования галактической тематики и сравнений с другими дистрибутивами.
-    '''
-    try:
-        client = Client()
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": content_2}],
-            web_search=False
+        with open(f'{LESSONS_DIR}/{lesson_number}.txt', 'r', encoding='utf-8') as f:
+            content = clean_lesson_text(f.read())
+        return (
+            f"*Урок {lesson_number}*\n\n{content}\n\n"
+            "*Задания:*\n1. Изучите материал\n2. Ответьте на вопрос"
         )
-        return response.choices[0].message.content
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Network error: {e}")
-        return "К сожалению, я не смог сгенерировать ответ из-за проблем с интернетом. Попробуйте снова."
+    except Exception as e:
+        logger.error(f"Ошибка чтения урока: {e}")
+        return "Урок не найден."
 
-
-def save_lesson_progress(user_id, lesson_number):
-    conn = get_db_connection()
+def init_db():
+    """Инициализация БД"""
+    conn = sqlite3.connect('user_progress.db')
     cursor = conn.cursor()
-
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS user_lessons (
-        user_id INTEGER,
-        lesson_number INTEGER,
-        completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (user_id, lesson_number)
-    )
+        CREATE TABLE IF NOT EXISTS user_lessons (
+            user_id INTEGER,
+            lesson_number INTEGER,
+            PRIMARY KEY (user_id, lesson_number)
+        )
     ''')
-
-    cursor.execute('INSERT OR IGNORE INTO user_lessons (user_id, lesson_number) VALUES (?, ?)',
-                   (user_id, lesson_number))
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_progress (
+            user_id INTEGER,
+            lesson_number INTEGER,
+            score INTEGER,
+            feedback TEXT,
+            PRIMARY KEY (user_id, lesson_number)
+        )
+    ''')
     conn.commit()
     conn.close()
 
+def generate_open_question(lesson_topic, lesson_content):
+    """Генерация открытого вопроса"""
+    try:
+        client = Client()
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{
+                "role": "user",
+                "content": f"Сгенерируй 1 открытый вопрос на тему '{lesson_topic}'. "
+                           f"Материал: {clean_lesson_text(lesson_content)}. "
+                           "Вопрос должен требовать развернутого ответа."
+            }],
+        )
+        return clean_lesson_text(response.choices[0].message.content)
+    except Exception as e:
+        logger.error(f"Ошибка генерации вопроса: {e}")
+        return "Не удалось сгенерировать вопрос. Попробуйте позже."
+
+def evaluate_answer(question, answer, lesson_content):
+    """Оценка ответа"""
+    try:
+        client = Client()
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{
+                "role": "user",
+                "content": f"Оцени ответ по 10-балльной шкале:\n"
+                           f"Вопрос: {question}\nОтвет: {answer}\n"
+                           f"Материал: {clean_lesson_text(lesson_content)}\n"
+                           "Дай развернутый отзыв."
+            }],
+        )
+        return clean_lesson_text(response.choices[0].message.content)
+    except Exception as e:
+        logger.error(f"Ошибка оценки: {e}")
+        return "Не удалось оценить ответ."
+
+def generate_user_portrait(user_id):
+    """Генерация портрета пользователя"""
+    try:
+        conn = sqlite3.connect('user_progress.db')
+        cursor = conn.cursor()
+
+        # Получение пройденных уроков
+        cursor.execute('SELECT lesson_number FROM user_lessons WHERE user_id = ?', (user_id,))
+        lessons = cursor.fetchall()
+
+        # Получение результатов тестов
+        cursor.execute('SELECT lesson_number, score, feedback FROM user_progress WHERE user_id = ?', (user_id,))
+        test_results = cursor.fetchall()
+
+        conn.close()
+
+        # Формирование текста для генерации портрета
+        lessons_text = f"Пройденные уроки: {', '.join(str(lesson[0]) for lesson in lessons)}" if lessons else "Пройденные уроки: нет"
+        test_results_text = "\n".join(
+            f"Урок {result[0]}: Оценка - {result[1]}/10, Отзыв - {result[2]}"
+            for result in test_results
+        ) if test_results else "Результаты тестов: нет"
+
+        content = f"""
+        На основе следующей информации о пользователе:
+        {lessons_text}
+        {test_results_text}
+
+        Создай портрет пользователя, опиши его сильные и слабые стороны.
+        Дай наставления и рекомендации для дальнейшего обучения.
+        Укажи, что пользователь хорошо знает, а что ему нужно подучить.
+        """
+
+        client = Client()
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{
+                "role": "user",
+                "content": content
+            }],
+        )
+        return clean_lesson_text(response.choices[0].message.content)
+    except Exception as e:
+        logger.error(f"Ошибка генерации портрета: {e}")
+        return "Не удалось сгенерировать портрет пользователя."
+
+def answer_question(question):
+    """Ответ на вопрос пользователя"""
+    try:
+        client = Client()
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{
+                "role": "user",
+                "content": f"Ответь на вопрос: {question}. "
+                           "Если вопрос о Linux, дай развернутый ответ. "
+                           "Если вопрос не о Linux, вежливо сообщи об этом."
+            }],
+        )
+        return clean_lesson_text(response.choices[0].message.content)
+    except Exception as e:
+        logger.error(f"Ошибка ответа на вопрос: {e}")
+        return "Не удалось ответить на вопрос. Попробуйте позже."
+
+def save_lesson_progress(user_id, lesson_number):
+    """Сохранение прогресса урока"""
+    conn = sqlite3.connect('user_progress.db')
+    cursor = conn.cursor()
+    cursor.execute('INSERT OR IGNORE INTO user_lessons VALUES (?, ?)', (user_id, lesson_number))
+    conn.commit()
+    conn.close()
 
 def save_test_result(user_id, lesson_number, score, feedback):
-    conn = get_db_connection()
+    """Сохранение результата теста"""
+    conn = sqlite3.connect('user_progress.db')
     cursor = conn.cursor()
-
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS user_progress (
-        user_id INTEGER,
-        lesson_number INTEGER,
-        score INTEGER,
-        feedback TEXT,
-        completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (user_id, lesson_number)
-    )
-    ''')
-
-    cursor.execute('''
-    INSERT OR REPLACE INTO user_progress (user_id, lesson_number, score, feedback)
-    VALUES (?, ?, ?, ?)
+        INSERT OR REPLACE INTO user_progress (user_id, lesson_number, score, feedback)
+        VALUES (?, ?, ?, ?)
     ''', (user_id, lesson_number, score, feedback))
     conn.commit()
     conn.close()
 
-
 def get_user_lessons(user_id):
-    conn = get_db_connection()
+    """Получение пройденных уроков пользователя"""
+    conn = sqlite3.connect('user_progress.db')
     cursor = conn.cursor()
-
     cursor.execute('SELECT lesson_number FROM user_lessons WHERE user_id = ?', (user_id,))
     lessons = cursor.fetchall()
     conn.close()
-
-    return {lesson[0] for lesson in lessons}
-
+    return [lesson[0] for lesson in lessons]
 
 def get_user_test_results(user_id):
-    conn = get_db_connection()
+    """Получение результатов тестов пользователя"""
+    conn = sqlite3.connect('user_progress.db')
     cursor = conn.cursor()
-
     cursor.execute('SELECT lesson_number, score, feedback FROM user_progress WHERE user_id = ?', (user_id,))
     test_results = cursor.fetchall()
     conn.close()
+    return test_results
 
-    results = {}
-    feedbacks = {}
-    for result in test_results:
-        lesson_number, score, feedback = result
-        results[lesson_number] = score
-        feedbacks[lesson_number] = feedback
-    return results, feedbacks
-
+def send_long_message(chat_id, text, reply_markup=None):
+    """Отправка длинного сообщения"""
+    max_length = 4096
+    parts = [text[i:i+max_length] for i in range(0, len(text), max_length)]
+    for i, part in enumerate(parts):
+        if i == len(parts) - 1:
+            bot.send_message(chat_id, part, reply_markup=reply_markup)
+        else:
+            bot.send_message(chat_id, part)
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    chat_id = message.chat.id
-
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn = types.KeyboardButton('Главное меню!')
-    markup.add(btn)
-
-    bot.send_message(chat_id, "*Привет! Я твой помощник в изучении Linux.*", reply_markup=markup, parse_mode='Markdown')
-
-
-@bot.message_handler(content_types=['text'])
-def handle_text(message):
-    chat_id = message.chat.id
-
-    if message.text == 'Главное меню!':
-        kb = types.InlineKeyboardMarkup(row_width=2)
-        lessons_hub = types.InlineKeyboardButton(text='🤔 Выбрать урок', callback_data="lessons")
-        test = types.InlineKeyboardButton(text='📝 Пройти тест', callback_data='test')
-        question = types.InlineKeyboardButton(text='🤖 Задать вопрос ИИ', callback_data='question')
-        progress = types.InlineKeyboardButton(text='📊 Прогресс', callback_data='progress')
-        kb.add(lessons_hub, test, question, progress)
-
-        bot.send_message(chat_id, '*Добро пожаловать в главное меню!*\nВыберите одну из опций:', reply_markup=kb,
-                         parse_mode='Markdown')
-
-    elif message.text.startswith('Урок'):
-        try:
-            lesson_number = int(message.text.split()[1])
-            lesson_content = get_lesson(lesson_number)
-            if lesson_content.startswith('_'):
-                bot.send_message(chat_id, lesson_content, parse_mode='Markdown')
-                return
-
-            # Разбиваем урок на части для удобства чтения
-            lesson_parts = lesson_content.split('\n\n')
-            for part in lesson_parts:
-                if part.strip():
-                    sanitized_part = sanitize_markdown(part)
-                    bot.send_message(chat_id, sanitized_part, parse_mode='Markdown')
-
-            # Добавление кнопки "Главное меню" после урока
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            btn = types.KeyboardButton('Главное меню!')
-            markup.add(btn)
-            bot.send_message(chat_id, "_Нажмите 'Главное меню!', чтобы продолжить._", reply_markup=markup,
-                             parse_mode='Markdown')
-
-            save_lesson_progress(chat_id, lesson_number)
-        except ValueError:
-            bot.send_message(chat_id, "_Неверный номер урока._", parse_mode='Markdown')
-
-    elif message.text.startswith('Тест по уроку'):
-        try:
-            lesson_number = int(message.text.split()[3])
-            lesson_content = get_lesson(lesson_number)
-            if lesson_content.startswith('_'):
-                bot.send_message(chat_id, lesson_content, parse_mode='Markdown')
-                return
-
-            lesson_topic = f"Урок {lesson_number} по Linux"
-
-            if random.choice([True, False]):
-                question_and_answers = generate_question_and_answers(lesson_topic, lesson_content)
-                current_questions[chat_id] = {"type": "multiple_choice", "lesson_number": lesson_number}
-            else:
-                question_and_answers = generate_open_question(lesson_topic, lesson_content)
-                current_questions[chat_id] = {"type": "open", "lesson_number": lesson_number, "content": lesson_content}
-
-            if question_and_answers.startswith("К сожалению"):
-                bot.send_message(chat_id, question_and_answers, parse_mode='Markdown')
-                return
-
-            if current_questions[chat_id]["type"] == "multiple_choice":
-                parts = question_and_answers.split('\n')
-                question = parts[0]
-                options = parts[1:-1]
-                correct_answer_line = parts[-1]
-
-                if ": " in correct_answer_line:
-                    correct_answer = correct_answer_line.split(': ')[1]
-                else:
-                    bot.send_message(chat_id,
-                                     "_Извините, не удалось определить правильный ответ, либо на сервере повышенная нагрузка, попробуйте немного подождать._",
-                                     parse_mode='Markdown')
-                    return
-
-                current_questions[chat_id]["correct_answer"] = correct_answer
-
-                if question.strip():
-                    bot.send_message(chat_id, question, parse_mode='Markdown')
-                for option in options:
-                    if option.strip():
-                        bot.send_message(chat_id, option, parse_mode='Markdown')
-                bot.send_message(chat_id, "_Пожалуйста, выберите правильный ответ, отправив его номер (например, A)._",
-                                 parse_mode='Markdown')
-            else:
-                question = question_and_answers.strip()
-                bot.send_message(chat_id, question, parse_mode='Markdown')
-                bot.send_message(chat_id, "_Пожалуйста, дайте развернутый ответ на вопрос._", parse_mode='Markdown')
-
-        except ValueError:
-            bot.send_message(chat_id, "_Неверный номер теста._", parse_mode='Markdown')
-
-    elif chat_id in current_questions:
-        question_data = current_questions[chat_id]
-
-        if question_data["type"] == "multiple_choice":
-            user_answer = message.text.strip().upper()
-            correct_answer = question_data["correct_answer"].strip().upper()
-
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            btn = types.KeyboardButton('Главное меню!')
-            markup.add(btn)
-
-            if user_answer == correct_answer:
-                score = 10
-                feedback = "Правильно! Вы ответили верно."
-                bot.send_message(chat_id, f"*{feedback}*", reply_markup=markup, parse_mode='Markdown')
-            else:
-                score = 0
-                feedback = f"Неправильно. Правильный ответ: {correct_answer}"
-                bot.send_message(chat_id, f"*{feedback}*", reply_markup=markup, parse_mode='Markdown')
-
-            lesson_number = question_data["lesson_number"]
-            save_test_result(chat_id, lesson_number, score, feedback)
-
-        elif question_data["type"] == "open":
-            user_answer = message.text.strip()
-            question = generate_open_question(f"Урок {question_data['lesson_number']} по Linux",
-                                              question_data["content"])
-            evaluation = evaluate_open_answer(question, user_answer, question_data["content"])
-
-            if evaluation.startswith("К сожалению"):
-                bot.send_message(chat_id, evaluation, parse_mode='Markdown')
-                return
-
-            bot.send_message(chat_id, f"_Ваш ответ:_ {user_answer}\n\n_Оценка:_ {evaluation}", parse_mode='Markdown')
-
-            lesson_number = question_data["lesson_number"]
-            save_test_result(chat_id, lesson_number, evaluation, evaluation)
-
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            btn = types.KeyboardButton('Главное меню!')
-            markup.add(btn)
-            bot.send_message(chat_id, "_Нажмите 'Главное меню!', чтобы продолжить._", reply_markup=markup,
-                             parse_mode='Markdown')
-
-        del current_questions[chat_id]
-
-
-@bot.callback_query_handler(func=lambda callback: callback.data == 'lessons')
-def handle_lessons(callback):
-    chat_id = callback.message.chat.id
-    kb1 = types.ReplyKeyboardMarkup(row_width=3)
-    kb1.add(*[types.KeyboardButton(text=f'Урок {i}') for i in range(1, 10)])
-    bot.send_message(chat_id, '_Выберите интересующий вас урок:_', reply_markup=kb1, parse_mode='Markdown')
-
-
-@bot.callback_query_handler(func=lambda callback: callback.data == 'test')
-def handle_test(callback):
-    chat_id = callback.message.chat.id
-    kb1 = types.ReplyKeyboardMarkup(row_width=3)
-    kb1.add(*[types.KeyboardButton(text=f'Тест по уроку {i}') for i in range(1, 10)])
-    bot.send_message(chat_id, '_Выберите тест из списка:_', reply_markup=kb1, parse_mode='Markdown')
-
-
-@bot.callback_query_handler(func=lambda callback: callback.data == 'question')
-def handle_question(callback):
-    chat_id = callback.message.chat.id
-    bot.send_message(chat_id, "_Пожалуйста, задайте ваш вопрос:_", parse_mode='Markdown')
-    bot.register_next_step_handler(callback.message, process_question)
-
-
-@bot.callback_query_handler(func=lambda callback: callback.data == 'progress')
-def handle_progress(callback):
-    chat_id = callback.message.chat.id
-
-    # Получаем данные о прогрессе
-    completed_lessons = get_user_lessons(chat_id)
-    test_results, test_feedbacks = get_user_test_results(chat_id)
-
-    # Формируем сообщение о прогрессе
-    progress_text = "📊 *Ваш прогресс*\n\n"
-
-    # Раздел пройденных уроков
-    if completed_lessons:
-        progress_text += "✅ *Пройденные уроки:*\n"
-        for lesson in sorted(completed_lessons):
-            progress_text += f"▪ Урок {lesson}\n"
-    else:
-        progress_text += "🔹 Вы пока не прошли ни одного урока\n"
-
-    progress_text += "\n"
-
-    # Раздел результатов тестов
-    if test_results:
-        progress_text += "📝 *Результаты тестов:*\n"
-        for lesson_number, score in sorted(test_results.items()):
-            feedback = test_feedbacks.get(lesson_number, "Без отзыва")
-
-            # Форматируем оценку с эмодзи
-            if isinstance(score, int):
-                rating_emoji = "⭐" * (score // 2)  # Показываем звезды за каждые 2 балла
-                score_display = f"{score}/10 {rating_emoji}"
-            else:
-                score_display = str(score)
-
-            progress_text += (
-                f"▫ *Урок {lesson_number}*\n"
-                f"   Оценка: {score_display}\n"
-                f"   Отзыв: {feedback[:100]}{'...' if len(feedback) > 100 else ''}\n\n"
-            )
-    else:
-        progress_text += "🔹 Вы пока не прошли ни одного теста\n"
-
-    # Создаем клавиатуру
-    kb = types.InlineKeyboardMarkup(row_width=1)
-    if test_results:
-        kb.add(types.InlineKeyboardButton(text='👤 Мой учебный портрет', callback_data='results'))
-    kb.add(types.InlineKeyboardButton(text='🔙 Назад', callback_data='back_to_menu'))
-
-    # Отправляем сообщение
+    """Обработка /start"""
     try:
-        bot.edit_message_text(
-            chat_id=chat_id,
-            message_id=callback.message.message_id,
-            text=progress_text,
-            reply_markup=kb,
-            parse_mode='Markdown'
-        )
-    except:
-        bot.send_message(
-            chat_id=chat_id,
-            text=progress_text,
-            reply_markup=kb,
-            parse_mode='Markdown'
-        )
+        init_db()
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add(types.KeyboardButton('Главное меню'))
+        bot.send_message(message.chat.id, "Привет! Я помогу изучить Linux.", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"Ошибка в /start: {e}")
+        bot.send_message(message.chat.id, "Ошибка запуска. Попробуйте позже.")
 
-
-@bot.callback_query_handler(func=lambda callback: callback.data == 'results')
-def handle_results(callback):
-    chat_id = callback.message.chat.id
-    user_portrait = generate_user_portrait(chat_id)
-    bot.send_message(chat_id, user_portrait, parse_mode='Markdown')
-
-
-@bot.callback_query_handler(func=lambda callback: callback.data == 'back_to_menu')
-def handle_back_to_menu(callback):
-    chat_id = callback.message.chat.id
+@bot.message_handler(func=lambda m: m.text == 'Главное меню')
+def show_main_menu(message):
+    """Главное меню"""
     kb = types.InlineKeyboardMarkup(row_width=2)
-    lessons_hub = types.InlineKeyboardButton(text='🤔 Выбрать урок', callback_data="lessons")
-    test = types.InlineKeyboardButton(text='📝 Пройти тест', callback_data='test')
-    question = types.InlineKeyboardButton(text='🤖 Задать вопрос ИИ', callback_data='question')
-    progress = types.InlineKeyboardButton(text='📊 Прогресс', callback_data='progress')
-    kb.add(lessons_hub, test, question, progress)
-
-    bot.edit_message_text(
-        chat_id=chat_id,
-        message_id=callback.message.message_id,
-        text='*Добро пожаловать в главное меню!*\nВыберите одну из опций:',
-        reply_markup=kb,
-        parse_mode='Markdown'
+    kb.add(
+        types.InlineKeyboardButton('📚 Уроки', callback_data='lessons'),
+        types.InlineKeyboardButton('📝 Тесты', callback_data='tests'),
+        types.InlineKeyboardButton('🤖 Вопрос', callback_data='question'),
+        types.InlineKeyboardButton('📊 Прогресс', callback_data='progress')
     )
+    bot.send_message(message.chat.id, "Главное меню:", reply_markup=kb)
 
+@bot.callback_query_handler(func=lambda c: c.data == 'lessons')
+def show_lessons(call):
+    """Список уроков"""
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+    markup.add(*[types.KeyboardButton(f'Урок {i}') for i in range(1, 10)])
+    bot.send_message(call.message.chat.id, "Выберите урок:", reply_markup=markup)
 
-def process_question(message):
-    chat_id = message.chat.id
+@bot.callback_query_handler(func=lambda c: c.data == 'tests')
+def show_tests(call):
+    """Список тестов"""
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+    markup.add(*[types.KeyboardButton(f'Тест по уроку {i}') for i in range(1, 10)])
+    bot.send_message(call.message.chat.id, "Выберите тест:", reply_markup=markup)
 
-    generating_message = bot.send_message(chat_id, "_Генерирую ответ, это может занять некоторое время..._",
-                                          parse_mode='Markdown')
+@bot.callback_query_handler(func=lambda c: c.data == 'question')
+def ask_question(call):
+    """Задать вопрос"""
+    bot.send_message(call.message.chat.id, "Задайте ваш вопрос:")
+    bot.register_next_step_handler(call.message, handle_question)
 
-    question = message.text
-    answer = answer_question(question)
+def handle_question(message):
+    """Обработка вопроса"""
+    try:
+        question = message.text
+        answer = answer_question(question)
+        bot.send_message(message.chat.id, answer)
+    except Exception as e:
+        logger.error(f"Ошибка обработки вопроса: {e}")
+        bot.send_message(message.chat.id, "Ошибка обработки вопроса.")
 
-    bot.delete_message(chat_id, generating_message.message_id)
+@bot.message_handler(func=lambda m: m.text.startswith('Урок'))
+def send_lesson(message):
+    """Отправка урока"""
+    try:
+        lesson_num = int(message.text.split()[1])
+        lesson = get_lesson(lesson_num)
+        for part in lesson.split('\n\n'):
+            if part.strip():
+                bot.send_message(message.chat.id, part, parse_mode='Markdown')
+        save_lesson_progress(message.chat.id, lesson_num)
+        show_main_button(message.chat.id)
+    except Exception as e:
+        logger.error(f"Ошибка отправки урока: {e}")
+        bot.send_message(message.chat.id, "Ошибка загрузки урока.")
 
-    if answer.startswith("К сожалению"):
-        bot.send_message(chat_id, answer, parse_mode='Markdown')
-    else:
-        sanitized_answer = sanitize_markdown(answer)
-        bot.send_message(chat_id, sanitized_answer, parse_mode='Markdown')
+@bot.message_handler(func=lambda m: m.text.startswith('Тест по уроку'))
+def start_test(message):
+    """Запуск теста"""
+    try:
+        lesson_num = int(message.text.split()[3])
+        lesson_content = get_lesson(lesson_num)
+        question = generate_open_question(f"Урок {lesson_num}", lesson_content)
+        current_questions[message.chat.id] = {
+            "lesson": lesson_num,
+            "content": lesson_content,
+            "question": question
+        }
+        bot.send_message(message.chat.id, question, parse_mode='Markdown')
+        bot.send_message(message.chat.id, "Напишите развернутый ответ:")
+    except Exception as e:
+        logger.error(f"Ошибка запуска теста: {e}")
+        bot.send_message(message.chat.id, "Ошибка генерации вопроса.")
 
+@bot.message_handler(func=lambda m: m.chat.id in current_questions)
+def handle_answer(message):
+    """Обработка ответа"""
+    try:
+        chat_id = message.chat.id
+        data = current_questions.pop(chat_id)
+        evaluation = evaluate_answer(
+            data["question"],
+            message.text,
+            data["content"]
+        )
 
+        # Извлечение оценки из отзыва
+        score_match = re.search(r'(\d+)\s*из\s*10', evaluation)
+        score = int(score_match.group(1)) if score_match else 0
+
+        # Сохранение оценки и отзыва
+        save_test_result(chat_id, data["lesson"], score, evaluation)
+
+        # Отправка оценки и отзыва в одном сообщении
+        bot.send_message(chat_id, f"Оценка: {score}/10\n\nОтзыв:\n{evaluation}", parse_mode='Markdown')
+        show_main_button(chat_id)
+    except Exception as e:
+        logger.error(f"Ошибка обработки ответа: {e}")
+        bot.send_message(message.chat.id, "Ошибка оценки ответа.")
+
+@bot.callback_query_handler(func=lambda c: c.data == 'progress')
+def show_progress(call):
+    """Показ прогресса"""
+    chat_id = call.message.chat.id
+    if chat_id in progress_loading:
+        return
+
+    progress_loading.add(chat_id)
+
+    try:
+        completed_lessons = get_user_lessons(chat_id)
+        test_results = get_user_test_results(chat_id)
+
+        progress_text = "📊 Ваш прогресс:\n\n"
+        progress_text += f"✅ Пройдено уроков: {', '.join(map(str, completed_lessons)) if completed_lessons else 'нет'}\n\n"
+
+        if test_results:
+            progress_text += "📝 Результаты тестов:\n"
+            for lesson_number, score, feedback in test_results:
+                progress_text += f"Урок {lesson_number}:\nОценка: {score}/10\nОтзыв: {feedback}\n\n"
+
+        # Кнопка "Мой портрет" будет на последнем сообщении
+        kb = types.InlineKeyboardMarkup(row_width=1)
+        kb.add(types.InlineKeyboardButton('Мой портрет', callback_data='user_portrait'))
+
+        send_long_message(chat_id, progress_text, reply_markup=kb)
+    finally:
+        progress_loading.remove(chat_id)
+
+@bot.callback_query_handler(func=lambda c: c.data == 'user_portrait')
+def show_user_portrait(call):
+    """Показ портрета пользователя"""
+    try:
+        chat_id = call.message.chat.id
+        portrait = generate_user_portrait(chat_id)
+        send_long_message(chat_id, f"🖼️ Ваш портрет:\n\n{portrait}")
+    except Exception as e:
+        logger.error(f"Ошибка показа портрета: {e}")
+        bot.send_message(call.message.chat.id, "Ошибка загрузки портрета.")
+
+def show_main_button(chat_id):
+    """Кнопка возврата"""
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(types.KeyboardButton('Главное меню'))
+    bot.send_message(chat_id, "Нажмите кнопку ниже:", reply_markup=markup)
+
+# Инициализация базы данных
+init_db()
+
+# Запуск бота
 bot.polling(none_stop=True)
