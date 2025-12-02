@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор курса - LinuxRush</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Подключаем твои стили -->
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-rocket me-2"></i>
+                LinuxRush
+            </a>
+        </div>
+    </nav>
+
+    <!-- Выбор курса -->
+    <section class="course-selection space-bg">
+        <div class="container">
+            <h1 class="section-title">Выберите свой космический курс</h1>
+            <p class="text-center mb-5" style="font-size: 1.2rem; color: rgba(255,255,255,0.8);">
+                Присоединяйтесь к эскадре уток-космонавтов и освойте Astra Linux через увлекательные приключения!
+            </p>
+            
+            <div class="row g-4">
+                <!-- Курс 1 -->
+                <div class="col-lg-4">
+                    <div class="course-card" onclick="startCourse('traveler')">
+                        <span class="course-level level-beginner">Начальный</span>
+                        <div class="course-icon">
+                            <i class="fas fa-user-astronaut"></i>
+                        </div>
+                        <h3 style="color: var(--star);">Космический путешественник</h3>
+                        <p>Основы Astra Linux для начинающих. Идеально для первого знакомства с операционной системой.</p>
+                        
+                        <div class="course-features">
+                            <div class="course-feature">
+                                <i class="fas fa-check" style="color: var(--comet);"></i>
+                                <span>6 модулей</span>
+                            </div>
+                            <div class="course-feature">
+                                <i class="fas fa-clock" style="color: var(--comet);"></i>
+                                <span>~12 часов</span>
+                            </div>
+                            <div class="course-feature">
+                                <i class="fas fa-rocket" style="color: var(--comet);"></i>
+                                <span>Основы терминала</span>
+                            </div>
+                            <div class="course-feature">
+                                <i class="fas fa-users" style="color: var(--comet);"></i>
+                                <span>Работа с файлами</span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-space mt-4 w-100" onclick="startCourse('traveler')">
+                            <i class="fas fa-play me-2"></i>Начать обучение
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Курс 2 -->
+                <div class="col-lg-4">
+                    <div class="course-card" onclick="startCourse('navigator')">
+                        <span class="course-level level-intermediate">Средний</span>
+                        <div class="course-icon">
+                            <i class="fas fa-satellite"></i>
+                        </div>
+                        <h3 style="color: var(--comet);">Сетевой штурман</h3>
+                        <p>Сетевое администрирование и безопасность. Для тех, кто хочет управлять сетевыми системами.</p>
+                        
+                        <div class="course-features">
+                            <div class="course-feature">
+                                <i class="fas fa-check" style="color: var(--comet);"></i>
+                                <span>5 модулей</span>
+                            </div>
+                            <div class="course-feature">
+                                <i class="fas fa-clock" style="color: var(--comet);"></i>
+                                <span>~15 часов</span>
+                            </div>
+                            <div class="course-feature">
+                                <i class="fas fa-shield-alt" style="color: var(--comet);"></i>
+                                <span>Безопасность</span>
+                            </div>
+                            <div class="course-feature">
+                                <i class="fas fa-network-wired" style="color: var(--comet);"></i>
+                                <span>Сети и SSH</span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-space mt-4 w-100" onclick="startCourse('navigator')">
+                            <i class="fas fa-play me-2"></i>Начать обучение
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Курс 3 -->
+                <div class="col-lg-4">
+                    <div class="course-card" onclick="startCourse('engineer')">
+                        <span class="course-level level-advanced">Продвинутый</span>
+                        <div class="course-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 style="color: var(--rocket);">Космический инженер</h3>
+                        <p>Продвинутое администрирование и разработка. Для будущих мастеров Astra Linux.</p>
+                        
+                        <div class="course-features">
+                            <div class="course-feature">
+                                <i class="fas fa-check" style="color: var(--comet);"></i>
+                                <span>5 модулей</span>
+                            </div>
+                            <div class="course-feature">
+                                <i class="fas fa-clock" style="color: var(--comet);"></i>
+                                <span>~18 часов</span>
+                            </div>
+                            <div class="course-feature">
+                                <i class="fas fa-database" style="color: var(--comet);"></i>
+                                <span>Базы данных</span>
+                            </div>
+                            <div class="course-feature">
+                                <i class="fas fa-robot" style="color: var(--comet);"></i>
+                                <span>Автоматизация</span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-space mt-4 w-100" onclick="startCourse('engineer')">
+                            <i class="fas fa-play me-2"></i>Начать обучение
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Контент урока (изначально скрыт) -->
+    <div id="lessonContainer" class="space-bg" style="display: none; padding-top: 100px; min-height: 100vh;">
+        <div class="container">
+            <!-- Здесь будет загружаться контент выбранного курса -->
+        </div>
+    </div>
+
+    <!-- Футер -->
+    <footer class="cosmic-footer">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h5 class="mb-3" style="color: var(--star);">
+                        <i class="fas fa-rocket me-2"></i>LinuxRush
+                    </h5>
+                    <p class="text-muted mb-0">
+                        Космическое приключение в мир Astra Linux
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <a href="/" class="btn btn-outline-space">
+                        <i class="fas fa-home me-2"></i>На главную
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Подключаем твои анимации -->
+    <script src="/static/js/animation.js"></script>
+</body>
+</html>
