@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinuxRush - Вход</title>
+    <style>
+        :root {
+            --space: #0a0a1a;
+            --nebula: #15152b;
+            --comet: #00f2fe;
+            --rocket: #ff6b35;
+            --star: #ffd700;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: var(--space);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .space-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0c0c2b 0%, #1a1a3e 100%);
+            z-index: -1;
+        }
+        
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+            z-index: 1;
+        }
+        
+        .login-card {
+            background: rgba(21, 21, 43, 0.9);
+            border: 1px solid var(--comet);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--rocket), var(--comet));
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo-icon {
+            color: var(--rocket);
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--star), var(--comet));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            color: var(--comet);
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--star);
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, var(--rocket), #7c3aed);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--comet), transparent);
+        }
+        
+        .divider span {
+            background: rgba(21, 21, 43, 0.9);
+            padding: 0 20px;
+            color: var(--comet);
+            font-weight: 600;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        
+        .links {
+            text-align: center;
+            margin-top: 25px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .links a {
+            color: var(--comet);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .links a:hover {
+            color: var(--star);
+            text-decoration: underline;
+        }
+        
+        .alert {
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid var(--rocket);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 25px;
+            color: #ffb8a8;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert i {
+            color: var(--rocket);
+        }
+        
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 15px;
+            }
+            
+            .login-card {
+                padding: 30px 25px;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="space-bg"></div>
+    <div class="stars"></div>
+    
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <i class="fas fa-rocket logo-icon"></i>
+                <h1 class="logo-text">LinuxRush</h1>
+                <p style="color: rgba(255, 255, 255, 0.8); margin-top: 10px; text-align: center;">
+                    Войдите в космический кабинет
+                </p>
+            </div>
+            
+            <!-- Сообщения об ошибках -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <!-- Форма входа -->
+            <form method="POST" action="/login/">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-envelope me-1"></i>Email
+                    </label>
+                    <input type="email" name="email" class="form-control" placeholder="Ваш email" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-key me-1"></i>Пароль
+                    </label>
+                    <input type="password" name="password" class="form-control" placeholder="Ваш пароль" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Войти в космос
+                </button>
+            </form>
+            
+            <!-- Ссылки -->
+            <div class="links">
+                <p>
+                    Новый космонавт? 
+                    <a href="/register/">Присоединиться к эскадре</a>
+                </p>
+                <p style="margin-top: 10px;">
+                    <a href="/">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Вернуться на главную
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Автофокус на поле email
+            setTimeout(() => {
+                const emailInput = document.querySelector('input[name="email"]');
+                if (emailInput) emailInput.focus();
+            }, 100);
+            
+            // Простая валидация
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const email = this.querySelector('input[name="email"]');
+                    const password = this.querySelector('input[name="password"]');
+                    
+                    if (!email.value.includes('@')) {
+                        e.preventDefault();
+                        email.style.borderColor = 'var(--rocket)';
+                        return false;
+                    }
+                    
+                    if (password.value.length < 6) {
+                        e.preventDefault();
+                        password.style.borderColor = 'var(--rocket)';
+                        return false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
