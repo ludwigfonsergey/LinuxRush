@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinuxRush - Все уроки</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --space: #0f0f23;
+            --nebula: #1a1a2e;
+            --star: #ffd700;
+            --planet: #4e54c8;
+            --comet: #00f2fe;
+            --rocket: #ff6b35;
+            --alien: #7c3aed;
+            --cosmic: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--space);
+            color: white;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+        
+        /* Навигация */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 15, 35, 0.95);
+            padding: 1rem 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar-brand {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.5rem;
+            color: var(--star);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            background: linear-gradient(45deg, var(--star), var(--comet));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+        }
+        
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+        }
+        
+        .lesson-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .lesson-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--comet);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .lesson-number {
+            width: 60px;
+            height: 60px;
+            background: var(--cosmic);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .lesson-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--comet);
+        }
+        
+        .lesson-card p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .status-not-started { 
+            background: rgba(255, 255, 255, 0.1); 
+            color: rgba(255, 255, 255, 0.6); 
+        }
+        
+        .status-completed { 
+            background: rgba(124, 58, 237, 0.2); 
+            color: var(--alien); 
+        }
+        
+        .start-btn {
+            background: linear-gradient(45deg, var(--rocket), var(--alien));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+            color: white;
+        }
+        
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--comet);
+            text-decoration: none;
+            margin-top: 50px;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-back:hover {
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--star);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .lessons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-rocket"></i>
+                LinuxRush
+            </a>
+            <a href="/dashboard/" class="start-btn" style="padding: 10px 20px; font-size: 0.9rem;">
+                <i class="fas fa-tachometer-alt"></i>
+                Мой кабинет
+            </a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Все уроки</h1>
+            <p>Выберите урок для изучения. Каждый урок - это новый шаг в освоении Astra Linux!</p>
+        </div>
+        
+        <div class="lessons-grid">
+            {% for lesson in available_lessons %}
+            <div class="lesson-card">
+                <div class="lesson-number">{{ lesson.id }}</div>
+                <span class="status-badge status-not-started">
+                    {% if lesson.completed %}✅ Пройден{% else %}🆕 Новый{% endif %}
+                </span>
+                <h3>{{ lesson.title }}</h3>
+                <p>{{ lesson.description }}</p>
+                <a href="/lesson/{{ lesson.id }}/" class="start-btn">
+                    <i class="fas fa-play"></i> 
+                    {% if lesson.completed %}Повторить{% else %}Начать урок{% endif %}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div style="text-align: center; margin-top: 50px;">
+            <a href="/dashboard/" class="nav-back">
+                <i class="fas fa-arrow-left"></i> Вернуться в кабинет
+            </a>
+        </div>
+    </div>
+</body>
+</html>
