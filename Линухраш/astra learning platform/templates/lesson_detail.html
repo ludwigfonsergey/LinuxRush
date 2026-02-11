@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LinuxRush - {{ lesson.title }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
@@ -21,6 +21,8 @@
             --terminal-bg: #0a0a12;
             --terminal-text: #00ff00;
             --terminal-border: #00ff00;
+            --success: #00ff9d;
+            --error: #ff4d4d;
         }
 
         * {
@@ -176,10 +178,13 @@
             color: var(--terminal-text);
             font-size: 1rem;
             line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
         .terminal-line {
             margin-bottom: 10px;
+            word-wrap: break-word;
         }
 
         .terminal-prompt {
@@ -196,7 +201,136 @@
             margin-left: 20px;
         }
 
-        /* Карточки команд */
+        .terminal-success {
+            color: var(--success);
+            margin-left: 20px;
+        }
+
+        .terminal-error {
+            color: var(--error);
+            margin-left: 20px;
+        }
+
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            flex: 1;
+            margin-left: 10px;
+            outline: none;
+            caret-color: #00ff00;
+        }
+
+        .terminal-input:focus {
+            outline: none;
+        }
+
+        .terminal-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 18px;
+            background: #00ff00;
+            animation: blink 1s infinite;
+            margin-left: 5px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .mission-status {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--terminal-border);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .mission-progress {
+            flex: 1;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .mission-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--terminal-text), var(--comet));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .mission-tasks {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 0 0;
+        }
+
+        .mission-task {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mission-task.completed {
+            color: var(--success);
+        }
+
+        .mission-task i {
+            width: 20px;
+        }
+
+        .command-hint {
+            background: rgba(0, 242, 254, 0.1);
+            border-left: 4px solid var(--comet);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-size: 0.95rem;
+        }
+
+        .command-hint code {
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--comet);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .reset-btn {
+            background: rgba(255, 107, 53, 0.2);
+            border: 1px solid var(--rocket);
+            color: var(--rocket);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 107, 53, 0.3);
+            transform: translateY(-2px);
+        }
+
         .command-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
@@ -215,46 +349,6 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
-        .command-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(45deg, #00ff00, #00ff9d);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            color: black;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .command-name {
-            color: var(--terminal-text);
-            font-family: 'Orbitron', monospace;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .command-example {
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid rgba(0, 255, 0, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin: 1rem 0;
-            font-family: 'Courier New', monospace;
-            color: var(--terminal-text);
-        }
-
-        /* Блоки глав */
         .chapter-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -280,22 +374,6 @@
             font-size: 1.2rem;
         }
 
-        /* Безопасность */
-        .warning-card {
-            background: rgba(255, 107, 53, 0.1);
-            border: 1px solid var(--rocket);
-            border-radius: 20px;
-            padding: 2rem;
-            margin: 2rem 0;
-        }
-
-        .warning-icon {
-            color: var(--rocket);
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Навигация */
         .lesson-navigation {
             display: flex;
             justify-content: space-between;
@@ -355,26 +433,25 @@
                 justify-content: center;
             }
         }
-        
-        /* Контент урока */
+
         .lesson-content {
             color: rgba(255, 255, 255, 0.9);
             line-height: 1.8;
         }
-        
+
         .lesson-content p {
             margin-bottom: 1.5rem;
         }
-        
+
         .lesson-content ul, .lesson-content ol {
             margin-left: 2rem;
             margin-bottom: 1.5rem;
         }
-        
+
         .lesson-content li {
             margin-bottom: 0.5rem;
         }
-        
+
         .lesson-content code {
             background: rgba(0, 242, 254, 0.1);
             color: var(--comet);
@@ -382,18 +459,34 @@
             border-radius: 4px;
             font-family: 'Courier New', monospace;
         }
-        
+
         .lesson-content strong {
             color: var(--star);
         }
-        
-        .blink {
-            animation: blink 1s infinite;
+
+        .achievement-popup {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: linear-gradient(45deg, var(--star), var(--comet));
+            color: black;
+            padding: 20px;
+            border-radius: 15px;
+            font-weight: bold;
+            display: none;
+            z-index: 9999;
+            animation: slideIn 0.5s ease;
         }
-        
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -427,11 +520,14 @@
             </div>
 
             <!-- Эмулятор терминала -->
-            <div class="terminal-container">
+            <div class="terminal-container" id="terminal">
                 <div class="terminal-header">
                     <div class="terminal-title">
                         <i class="fas fa-terminal"></i>
-                        astra_terminal@linuxrush:~$
+                        astra_terminal@linuxrush:~$ 
+                        <span style="color: var(--star); margin-left: 10px; font-size: 0.8rem;">
+                            <i class="fas fa-flag"></i> Урок {{ lesson_id }}: Практика
+                        </span>
                     </div>
                     <div class="terminal-dots">
                         <div class="terminal-dot dot-red"></div>
@@ -439,7 +535,8 @@
                         <div class="terminal-dot dot-green"></div>
                     </div>
                 </div>
-                <div class="terminal-body">
+                
+                <div class="terminal-body" id="terminal-body">
                     <div class="terminal-line">
                         <span class="terminal-prompt">astra_terminal@linuxrush:~$</span>
                         <span class="terminal-command">echo "Запуск урока {{ lesson_id }}..."</span>
@@ -457,11 +554,107 @@
                         ✅ Готов к обучению!
                     </div>
                     
-                    <div class="terminal-line">
+                    <div id="terminal-history"></div>
+                    
+                    <div class="terminal-input-line" id="terminal-input-line">
                         <span class="terminal-prompt">astra_terminal@linuxrush:~$</span>
-                        <span class="terminal-command blink">▊</span>
+                        <input type="text" class="terminal-input" id="terminal-input" autofocus>
                     </div>
                 </div>
+            </div>
+
+            <!-- Статус миссии и задания -->
+            <div class="mission-status">
+                <div style="font-size: 1.5rem; color: var(--terminal-text);">
+                    <i class="fas fa-space-shuttle"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="color: var(--terminal-text);">Прогресс миссии</span>
+                        <span style="color: var(--terminal-text);" id="mission-progress-text">0%</span>
+                    </div>
+                    <div class="mission-progress">
+                        <div class="mission-progress-bar" id="mission-progress-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <button class="reset-btn" onclick="resetMission()">
+                    <i class="fas fa-redo-alt"></i> Сбросить
+                </button>
+            </div>
+
+            <!-- Список заданий для урока -->
+            <div class="command-card" style="border-color: var(--terminal-border);">
+                <h3 style="color: var(--terminal-text); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-tasks"></i>
+                    Задания миссии
+                </h3>
+                <ul class="mission-tasks" id="mission-tasks">
+                    <!-- Задания для разных уроков -->
+                    {% if lesson_id == 8 %}
+                        <li class="mission-task" id="task1">
+                            <i class="far fa-circle"></i> Создай скрипт mission.sh (touch)
+                        </li>
+                        <li class="mission-task" id="task2">
+                            <i class="far fa-circle"></i> Сделай скрипт исполняемым (chmod +x)
+                        </li>
+                        <li class="mission-task" id="task3">
+                            <i class="far fa-circle"></i> Выведи приветствие с echo
+                        </li>
+                        <li class="mission-task" id="task4">
+                            <i class="far fa-circle"></i> Создай переменную с именем
+                        </li>
+                        <li class="mission-task" id="task5">
+                            <i class="far fa-circle"></i> Используй read для ввода
+                        </li>
+                    {% elif lesson_id == 9 %}
+                        <li class="mission-task" id="task1">
+                            <i class="far fa-circle"></i> Открой/создай БД space.db (sqlite3)
+                        </li>
+                        <li class="mission-task" id="task2">
+                            <i class="far fa-circle"></i> Создай таблицу космонавты (CREATE TABLE)
+                        </li>
+                        <li class="mission-task" id="task3">
+                            <i class="far fa-circle"></i> Добавь одного космонавта (INSERT)
+                        </li>
+                        <li class="mission-task" id="task4">
+                            <i class="far fa-circle"></i> Выполни SELECT запрос
+                        </li>
+                        <li class="mission-task" id="task5">
+                            <i class="far fa-circle"></i> Обнови данные (UPDATE)
+                        </li>
+                    {% else %}
+                        <li class="mission-task" id="task1">
+                            <i class="far fa-circle"></i> Используй команду ls
+                        </li>
+                        <li class="mission-task" id="task2">
+                            <i class="far fa-circle"></i> Создай новую папку (mkdir)
+                        </li>
+                        <li class="mission-task" id="task3">
+                            <i class="far fa-circle"></i> Перейди в папку (cd)
+                        </li>
+                        <li class="mission-task" id="task4">
+                            <i class="far fa-circle"></i> Создай файл (touch)
+                        </li>
+                        <li class="mission-task" id="task5">
+                            <i class="far fa-circle"></i> Запиши текст в файл (echo >)
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <!-- Подсказки по командам -->
+            <div class="command-hint">
+                <i class="fas fa-lightbulb" style="color: var(--star); margin-right: 10px;"></i>
+                <strong style="color: var(--star);">Подсказка:</strong>
+                <span id="command-hint-text">
+                    {% if lesson_id == 8 %}
+                        Попробуй: <code>touch mission.sh</code>, <code>chmod +x mission.sh</code>, <code>echo "Привет"</code>
+                    {% elif lesson_id == 9 %}
+                        Попробуй: <code>sqlite3 space.db</code>, <code>CREATE TABLE</code>, <code>INSERT INTO</code>
+                    {% else %}
+                        Попробуй: <code>ls -la</code>, <code>mkdir test</code>, <code>cd test</code>
+                    {% endif %}
+                </span>
             </div>
 
             <!-- Содержание урока -->
@@ -470,48 +663,6 @@
                 <h3 style="color: var(--comet); margin-bottom: 1.5rem;">Содержание урока</h3>
                 <div class="lesson-content">
                     {{ lesson.content|safe }}
-                </div>
-                
-                {% if lesson_id == 2 %}
-                <div style="background: rgba(0, 242, 254, 0.1); padding: 1.5rem; border-radius: 15px; margin-top: 1.5rem;">
-                    <p style="color: var(--comet); margin: 0; font-style: italic;">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Терминал — это ваш пульт управления космическим кораблём. Каждая команда — это новый манёвр в бескрайнем космосе Linux!
-                    </p>
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Практическое задание -->
-            <div class="command-card" style="border-color: var(--star); background: rgba(255, 215, 0, 0.05);">
-                <h3 style="color: var(--star); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-hands-helping"></i>
-                    Практическое задание
-                </h3>
-                <div class="lesson-content">
-                    <p>Попробуйте выполнить эти команды в терминале (если у вас установлен Linux) или запомните их для будущего использования:</p>
-                    
-                    <div class="command-example" style="margin-bottom: 1rem;">
-                        {% if lesson_id == 2 %}
-                        1. <span style="color: #00ff9d;">$</span> mkdir LinuxRush_Урок{{ lesson_id }}<br>
-                        2. <span style="color: #00ff9d;">$</span> cd LinuxRush_Урок{{ lesson_id }}<br>
-                        3. <span style="color: #00ff9d;">$</span> touch задание.txt<br>
-                        4. <span style="color: #00ff9d;">$</span> echo "Я изучаю Astra Linux!" > задание.txt<br>
-                        5. <span style="color: #00ff9d;">$</span> cat задание.txt<br>
-                        {% elif lesson_id == 1 %}
-                        1. Откройте терминал<br>
-                        2. Введите команду <code>whoami</code><br>
-                        3. Введите команду <code>uname -a</code><br>
-                        4. Введите команду <code>lsb_release -a</code><br>
-                        {% else %}
-                        1. Создайте новую папку для урока<br>
-                        2. Создайте текстовый файл с заметками<br>
-                        3. Запишите 3 главных тезиса урока<br>
-                        4. Сохраните файл для повторения<br>
-                        {% endif %}
-                    </div>
-                    
-                    <p><strong>Задание:</strong> Выполните все пункты и убедитесь, что понимаете каждый шаг.</p>
                 </div>
             </div>
 
@@ -535,7 +686,7 @@
                 </a>
                 
                 {% if next_lesson %}
-                <a href="/lesson/{{ next_lesson }}/" class="nav-btn next">
+                <a href="/lesson/{{ next_lesson }}/" class="nav-btn next" id="next-lesson-btn">
                     Урок {{ next_lesson }}
                     <i class="fas fa-arrow-right ms-2"></i>
                 </a>
@@ -549,24 +700,120 @@
         </div>
     </section>
 
+    <!-- Достижение -->
+    <div class="achievement-popup" id="achievement-popup">
+        <i class="fas fa-trophy" style="margin-right: 10px;"></i>
+        <span id="achievement-text">Задание выполнено!</span>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Анимация мигающего курсора
-        function blinkCursor() {
-            const cursor = document.querySelector('.blink');
-            if (cursor) {
-                setInterval(() => {
-                    cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
-                }, 500);
+        // Состояние терминала
+        let terminalHistory = [];
+        let currentLesson = {{ lesson_id }};
+        let completedTasks = {
+            task1: false,
+            task2: false,
+            task3: false,
+            task4: false,
+            task5: false
+        };
+        let taskCount = 5;
+        let virtualFileSystem = {
+            'current_dir': '/home/космонавт',
+            'files': {
+                '/home/космонавт': ['документы', 'загрузки'],
+                '/home/космонавт/документы': ['отчет.txt'],
+                '/home/космонавт/загрузки': []
             }
-        }
+        };
 
-        // Анимация появления элементов
+        // База данных команд для проверки
+        const commandValidators = {
+            8: {  // Урок 8: Bash
+                'touch mission.sh': 'task1',
+                'touch mission': 'task1',
+                'chmod\\s+\\+x\\s+mission.sh': 'task2',
+                'chmod\\s+\\+x\\s+mission': 'task2',
+                'echo\\s+["\']?[^"\']+["\']?': 'task3',
+                '\\w+="[^"]+"': 'task4',
+                'read\\s+\\w+': 'task5'
+            },
+            9: {  // Урок 9: SQLite
+                'sqlite3\\s+\\w+\\.db': 'task1',
+                'CREATE\\s+TABLE\\s+\\w+': 'task2',
+                'INSERT\\s+INTO\\s+\\w+': 'task3',
+                'SELECT\\s+\\*\\s+FROM\\s+\\w+': 'task4',
+                'UPDATE\\s+\\w+\\s+SET': 'task5'
+            },
+            'default': {
+                'ls': 'task1',
+                'ls\\s+-la': 'task1',
+                'mkdir\\s+\\w+': 'task2',
+                'cd\\s+\\w+': 'task3',
+                'touch\\s+\\w+': 'task4',
+                'echo\\s+["\']?[^"\']+["\']?\\s*>\\s+\\w+': 'task5'
+            }
+        };
+
+        // Ответы команд
+        const commandResponses = {
+            'ls': 'документы  загрузки',
+            'ls -la': 'drwxr-xr-x 2 космонавт космонавт 4096 мар 15 10:30 .\ndrwxr-xr-x 3 root root 4096 мар 15 10:29 ..\ndrwxr-xr-x 2 космонавт космонавт 4096 мар 15 10:30 документы\ndrwxr-xr-x 2 космонавт космонавт 4096 мар 15 10:30 загрузки',
+            'mkdir': function(args) {
+                let dirName = args[1];
+                virtualFileSystem.files[virtualFileSystem.current_dir].push(dirName);
+                return `✅ Папка '${dirName}' создана`;
+            },
+            'touch': function(args) {
+                let fileName = args[1];
+                if (!virtualFileSystem.files[virtualFileSystem.current_dir]) {
+                    virtualFileSystem.files[virtualFileSystem.current_dir] = [];
+                }
+                virtualFileSystem.files[virtualFileSystem.current_dir].push(fileName);
+                return `✅ Файл '${fileName}' создан`;
+            },
+            'echo': function(args) {
+                let text = args.slice(1).join(' ');
+                if (text.includes('>')) {
+                    let parts = text.split('>');
+                    let content = parts[0].replace(/["']/g, '').trim();
+                    let filename = parts[1].trim();
+                    return `✅ Текст записан в ${filename}`;
+                }
+                return text.replace(/["']/g, '');
+            },
+            'chmod +x': function(args) {
+                return `✅ Права на выполнение добавлены для ${args[2] || 'mission.sh'}`;
+            },
+            'sqlite3': function(args) {
+                return `✅ База данных ${args[1]} создана/открыта\nsqlite> `;
+            },
+            'CREATE TABLE': '✅ Таблица создана',
+            'INSERT INTO': '✅ Данные добавлены',
+            'SELECT': 'id | имя | должность\n1  | Иван | Капитан',
+            'UPDATE': '✅ Данные обновлены'
+        };
+
+        // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            blinkCursor();
+            const terminalInput = document.getElementById('terminal-input');
+            const terminalBody = document.getElementById('terminal-body');
             
+            terminalInput.focus();
+            
+            terminalInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const command = terminalInput.value.trim();
+                    if (command) {
+                        processCommand(command);
+                    }
+                    terminalInput.value = '';
+                }
+            });
+
+            // Анимация появления элементов
             const elements = document.querySelectorAll('.command-card, .chapter-card, .warning-card');
-            
             elements.forEach((element, index) => {
                 element.style.opacity = '0';
                 element.style.transform = 'translateY(30px)';
@@ -586,6 +833,227 @@
                     observer.observe(element);
                 }, index * 100);
             });
+
+            loadMissionProgress();
+        });
+
+        // Обработка команд
+        function processCommand(command) {
+            const terminalBody = document.getElementById('terminal-body');
+            const prompt = document.createElement('div');
+            prompt.className = 'terminal-line';
+            prompt.innerHTML = `<span class="terminal-prompt">astra_terminal@linuxrush:~$</span> <span class="terminal-command">${command}</span>`;
+            
+            terminalBody.insertBefore(prompt, document.getElementById('terminal-input-line'));
+
+            // Проверяем команду и получаем ответ
+            const response = executeCommand(command);
+            
+            const output = document.createElement('div');
+            output.className = response.startsWith('❌') ? 'terminal-error' : 'terminal-output';
+            output.innerHTML = response;
+            terminalBody.insertBefore(output, document.getElementById('terminal-input-line'));
+
+            // Проверяем, выполнено ли задание
+            checkCommandForTask(command);
+            
+            // Прокручиваем вниз
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+
+        // Выполнение команды
+        function executeCommand(command) {
+            command = command.trim();
+            
+            // Приветствие
+            if (command === 'help') {
+                return 'Доступные команды: ls, cd, mkdir, touch, echo, chmod, sqlite3, CREATE TABLE, INSERT INTO, SELECT, UPDATE, reset';
+            }
+            
+            if (command === 'clear') {
+                clearTerminal();
+                return '';
+            }
+
+            // Проверяем специальные команды
+            for (let key in commandResponses) {
+                if (command.startsWith(key)) {
+                    if (typeof commandResponses[key] === 'function') {
+                        return commandResponses[key](command.split(' '));
+                    }
+                    return commandResponses[key];
+                }
+            }
+
+            // Если команда не найдена
+            if (command.includes('touch') || command.includes('mkdir') || command.includes('chmod')) {
+                return executeCommand(command.split(' ')[0] + ' ' + (command.split(' ')[1] || ''));
+            }
+
+            return `❌ Команда не найдена: ${command}. Введите 'help' для списка команд.`;
+        }
+
+        // Проверка команды на соответствие заданию
+        function checkCommandForTask(command) {
+            command = command.trim().toLowerCase();
+            
+            let validators = commandValidators[currentLesson] || commandValidators['default'];
+            
+            for (let pattern in validators) {
+                let regex = new RegExp(pattern, 'i');
+                if (regex.test(command)) {
+                    let taskId = validators[pattern];
+                    if (!completedTasks[taskId]) {
+                        completeTask(taskId);
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Выполнение задания
+        function completeTask(taskId) {
+            if (completedTasks[taskId]) return;
+            
+            completedTasks[taskId] = true;
+            
+            // Обновляем UI
+            const taskElement = document.getElementById(taskId);
+            if (taskElement) {
+                taskElement.classList.add('completed');
+                taskElement.innerHTML = taskElement.innerHTML.replace('far fa-circle', 'fas fa-check-circle');
+            }
+            
+            // Показываем достижение
+            showAchievement(`✅ Задание выполнено!`);
+            
+            // Обновляем прогресс
+            updateMissionProgress();
+            
+            // Сохраняем прогресс
+            saveMissionProgress();
+            
+            // Проверяем, все ли задания выполнены
+            checkAllTasksCompleted();
+        }
+
+        // Обновление прогресса миссии
+        function updateMissionProgress() {
+            let completed = 0;
+            for (let task in completedTasks) {
+                if (completedTasks[task]) completed++;
+            }
+            
+            let progress = Math.round((completed / taskCount) * 100);
+            document.getElementById('mission-progress-bar').style.width = progress + '%';
+            document.getElementById('mission-progress-text').innerHTML = progress + '%';
+        }
+
+        // Проверка всех заданий
+        function checkAllTasksCompleted() {
+            let allCompleted = true;
+            for (let task in completedTasks) {
+                if (!completedTasks[task]) {
+                    allCompleted = false;
+                    break;
+                }
+            }
+            
+            if (allCompleted) {
+                showAchievement('🎉 Миссия выполнена! Урок пройден!');
+                
+                // Активируем кнопку следующего урока
+                const nextBtn = document.getElementById('next-lesson-btn');
+                if (nextBtn) {
+                    nextBtn.style.animation = 'pulse 1s infinite';
+                }
+            }
+        }
+
+        // Сброс миссии
+        function resetMission() {
+            for (let task in completedTasks) {
+                completedTasks[task] = false;
+            }
+            
+            // Сбрасываем UI
+            const tasks = document.querySelectorAll('.mission-task');
+            tasks.forEach(task => {
+                task.classList.remove('completed');
+                task.innerHTML = task.innerHTML.replace('fas fa-check-circle', 'far fa-circle');
+            });
+            
+            // Сбрасываем прогресс
+            updateMissionProgress();
+            
+            // Очищаем историю терминала
+            clearTerminal();
+            
+            showAchievement('🔄 Миссия сброшена');
+        }
+
+        // Очистка терминала
+        function clearTerminal() {
+            const terminalBody = document.getElementById('terminal-body');
+            const inputLine = document.getElementById('terminal-input-line');
+            
+            // Оставляем только приветствие и строку ввода
+            terminalBody.innerHTML = `
+                <div class="terminal-line">
+                    <span class="terminal-prompt">astra_terminal@linuxrush:~$</span>
+                    <span class="terminal-command">echo "Запуск урока ${currentLesson}..."</span>
+                </div>
+                <div class="terminal-line terminal-output">Запуск урока ${currentLesson}...</div>
+                <div class="terminal-line">
+                    <span class="terminal-prompt">astra_terminal@linuxrush:~$</span>
+                    <span class="terminal-command">welcome --mission "Урок ${currentLesson}"</span>
+                </div>
+                <div class="terminal-line terminal-output">
+                    🚀 Добро пожаловать на урок ${currentLesson}!<br>
+                    ✅ Терминал очищен. Начинай заново!
+                </div>
+            `;
+            terminalBody.appendChild(inputLine);
+        }
+
+        // Показ достижения
+        function showAchievement(text) {
+            const popup = document.getElementById('achievement-popup');
+            const achievementText = document.getElementById('achievement-text');
+            achievementText.textContent = text;
+            popup.style.display = 'flex';
+            
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000);
+        }
+
+        // Сохранение прогресса
+        function saveMissionProgress() {
+            localStorage.setItem(`lesson_${currentLesson}_progress`, JSON.stringify(completedTasks));
+        }
+
+        // Загрузка прогресса
+        function loadMissionProgress() {
+            const saved = localStorage.getItem(`lesson_${currentLesson}_progress`);
+            if (saved) {
+                completedTasks = JSON.parse(saved);
+                for (let task in completedTasks) {
+                    if (completedTasks[task]) {
+                        const taskElement = document.getElementById(task);
+                        if (taskElement) {
+                            taskElement.classList.add('completed');
+                            taskElement.innerHTML = taskElement.innerHTML.replace('far fa-circle', 'fas fa-check-circle');
+                        }
+                    }
+                }
+                updateMissionProgress();
+            }
+        }
+
+        // Фокус на терминал при клике
+        document.addEventListener('click', function() {
+            document.getElementById('terminal-input').focus();
         });
     </script>
 </body>
